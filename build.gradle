@@ -506,12 +506,11 @@ tasks.register("pushDB") {
 }
 
 tasks.register("release", GradleBuild) {
-    tasks = ['clean', 'createVersion', 'poeditorPull', 'processResources', 'createLanguageFileList', 'makeAllMedias']
+    tasks = ['clean', 'createVersion', 'processResources', 'createLanguageFileList', 'makeAllMedias']
 }
 
 markdownToHtml.dependsOn(pushmd)
 poeditorPull.dependsOn(markdownToHtml)
-processResources.dependsOn(poeditorPull)
 compileJava.dependsOn(clean)
 compileJava.dependsOn(processResources)
 

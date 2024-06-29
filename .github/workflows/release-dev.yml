@@ -69,7 +69,7 @@ jobs:
           --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
           --header 'Content-type: application/json' \
           --header 'User-Agent: Github-Action' \
-          --url https://api.github.com/repos/ho-dev/HattrickOrganizer/releases/${{ steps.create_release.outputs.id }} \
+          --url https://api.github.com/repos/tychobrailleur/NotHO/releases/${{ steps.create_release.outputs.id }} \
           --data '{ "draft": false }'
       - name: If not dev-release delete previous short version tag
         if: ${{ steps.read_version_properties.outputs.tag != 'dev' }}

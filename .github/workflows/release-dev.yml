@@ -22,7 +22,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v2
+        uses: gradle/actions/wrapper-validation@v4
       - name: Download and install install4j
         run: wget https://download-gcdn.ej-technologies.com/install4j/install4j_linux-x64_10_0_6.deb && sudo dpkg -i install4j_linux-x64_10_0_6.deb
       - name: Build with Gradle
@@ -43,9 +43,10 @@ jobs:
         id: show_version
         run: cat version.properties
       - name: Delete previous tag and release
-        uses: ClementTsang/delete-tag-and-release@v0.4.0
+        uses: tychobrailleur/delete-tag-and-release@453626e2f16a2625a19e18d91e4cdf1f41624dde
         with:
           delete_release: true
+          delete_non_draft: true
           tag_name: ${{ steps.read_version_properties.outputs.tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
@@ -69,13 +70,14 @@ jobs:
           --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
           --header 'Content-type: application/json' \
           --header 'User-Agent: Github-Action' \
-          --url https://api.github.com/repos/tychobrailleur/NotHO/releases/${{ steps.create_release.outputs.id }} \
+          --url https://api.github.com/repos/ho-dev/HattrickOrganizer/releases/${{ steps.create_release.outputs.id }} \
           --data '{ "draft": false }'
       - name: If not dev-release delete previous short version tag
         if: ${{ steps.read_version_properties.outputs.tag != 'dev' }}
-        uses: ClementTsang/delete-tag-and-release@v0.3.1
+        uses: tychobrailleur/delete-tag-and-release@453626e2f16a2625a19e18d91e4cdf1f41624dde
         with:
           delete_release: true
+          delete_non_draft: true
           tag_name: ${{ steps.read_version_properties.outputs.shortVersion }}
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
@@ -92,10 +94,16 @@ jobs:
           body_path: docs/md/release_notes.md
           target_commitish: ${{ steps.read_version_properties.outputs.branch }}
           prerelease: ${{ steps.read_version_properties.outputs.tag != 'tag_stable' }}
-      - name: If 'tag_stable' release, also create 'stable' tag
+      - name: Create `stable` release if `tag_stable` release
         if: ${{ steps.read_version_properties.outputs.tag == 'tag_stable' }}
-        uses: rickstaa/action-create-tag@v1.7.2
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         with:
-          tag: stable
-          tag_exists_error: false
-          force_push_tag: true
+          files: |
+            build/artefacts/**
+          name: ${{ steps.read_version_properties.outputs.version }}
+          tag_name: stable
+          body_path: docs/md/release_notes.md
+          target_commitish: ${{ steps.read_version_properties.outputs.branch }}
+          prerelease: false
